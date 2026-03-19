@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>香麦源 · AI 工厂助手</title>
+<style>
+:root {
+  --gold:#c8973a;--gold-light:#e8c07a;--gold-dark:#8a6420;
+  --green:#2d6a4f;--green-pale:#d8f3dc;
+  --cream:#fdf8f0;--text:#2c1810;--text2:#6b4226;--muted:#a08060;
+  --shadow:0 4px 24px rgba(100,60,20,0.12);
+  --red:#c0392b;--orange:#e07b39;--blue:#2471a3;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+body{background:var(--cream);color:var(--text);font-family:'PingFang SC','Noto Sans SC',sans-serif;min-height:100vh;overflow-x:hidden;}
+
+/* Header */
+.hd{background:linear-gradient(135deg,#2d6a4f,#1b4332,#0f2e1f);padding:20px 16px 24px;position:relative;overflow:hidden;}
+.hd::before{content:'';position:absolute;top:-40px;right:-40px;width:200px;height:200px;border-radius:50%;background:rgba(200,151,58,0.15);}
+.hd-top{display:flex;align-items:center;gap:12px;margin-bottom:14px;position:relative;z-index:1;}
+.logo{width:48px;height:48px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0;}
+.bn{font-size:22px;font-weight:700;color:white;letter-spacing:.05em;}
+.bs{font-size:11px;color:var(--gold-light);margin-top:2px;}
+.hbadge{margin-left:auto;background:rgba(200,151,58,.2);border:1px solid var(--gold);color:var(--gold-light);padding:4px 10px;border-radius:20px;font-size:11px;flex-shrink:0;}
+.hg{position:relative;z-index:1;background:rgba(255,255,255,.08);border-radius:12px;padding:12px 14px;border:1px solid rgba(200,151,58,.3);}
+.gt{font-size:13px;color:rgba(255,255,255,.9);line-height:1.6;}
+.gd{font-size:11px;color:var(--gold-light);margin-top:4px;}
+
+/* Demo tip */
+.dtip{background:rgba(200,151,58,.1);border:1px dashed var(--gold);color:var(--gold-dark);padding:8px 14px;border-radius:10px;font-size:11px;margin:12px 16px 0;text-align:center;line-height:1.6;}
+
+/* Sections */
+.sec{padding:14px 16px;}
+.stitle{font-size:11px;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;font-weight:700;margin-bottom:10px;}
+
+/* Quick grid */
+.qg{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+.qb{background:white;border:1px solid rgba(200,151,58,.15);border-radius:12px;padding:12px 6px;text-align:center;cursor:pointer;box-shadow:0 2px 8px rgba(100,60,20,.08);transition:all .2s;}
+.qb:active{transform:scale(.95);}
+.qi{font-size:22px;margin-bottom:4px;}
+.ql{font-size:11px;color:var(--text2);font-weight:500;}
+
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.stat{background:white;border-radius:12px;padding:12px 10px;text-align:center;box-shadow:0 2px 8px rgba(100,60,20,.06);border:1px solid rgba(200,151,58,.12);}
+.sn{font-size:22px;font-weight:700;color:var(--green);}
+.sl{font-size:11px;color:var(--muted);margin-top:2px;}
+.stat.warn .sn{color:var(--orange);}
+.stat.urgent .sn{color:var(--red);}
+
+/* Alert items */
+.ali{background:white;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:10px;border-left:3px solid;box-shadow:0 2px 8px rgba(100,60,20,.06);}
+.ali.warn{border-left-color:var(--orange);}
+.ali.info{border-left-color:var(--green);}
+.ali.urgent{border-left-color:var(--red);}
+.ali.blue{border-left-color:var(--blue);}
+.aico{font-size:18px;flex-shrink:0;margin-top:1px;}
+.atitle{font-size:13px;font-weight:600;margin-bottom:2px;}
+.adesc{font-size:11px;color:var(--muted);}
+
+/* Chat */
+.chatbox{background:white;border-radius:16px;box-shadow:var(--shadow);border:1px solid rgba(200,151,58,.15);overflow:hidden;}
+.chd{background:linear-gradient(135deg,var(--green),#1b4332);padding:12px 16px;display:flex;align-items:center;gap:10px;}
+.aav{width:32px;height:32px;background:linear-gradient(135deg,var(--gold),var(--gold-dark));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;}
+.anm{font-size:13px;font-weight:600;color:white;}
+.ast{font-size:10px;color:var(--gold-light);}
+.dot{width:6px;height:6px;background:#52b788;border-radius:50%;margin-left:auto;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.msgs{padding:14px;min-height:220px;max-height:300px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.msg{display:flex;gap:8px;align-items:flex-start;animation:fi .3s ease;}
+.msg.user{flex-direction:row-reverse;}
+@keyframes fi{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.mav{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;margin-top:2px;}
+.msg-ai .mav{background:linear-gradient(135deg,var(--gold),var(--gold-dark));}
+.msg.user .mav{background:linear-gradient(135deg,var(--green),#1b4332);}
+.bbl{max-width:78%;padding:10px 13px;border-radius:14px;font-size:13px;line-height:1.6;}
+.msg-ai .bbl{background:var(--cream);color:var(--text);border:1px solid rgba(200,151,58,.2);border-top-left-radius:4px;}
+.msg.user .bbl{background:linear-gradient(135deg,var(--green),#1b4332);color:white;border-top-right-radius:4px;}
+.mt{font-size:10px;color:var(--muted);margin-top:4px;}
+.msg.user .mt{text-align:right;}
+.typing{display:flex;gap:4px;align-items:center;padding:4px 0;}
+.td{width:6px;height:6px;background:var(--gold);border-radius:50%;animation:ta 1.2s infinite;}
+.td:nth-child(2){animation-delay:.2s}.td:nth-child(3){animation-delay:.4s}
+@keyframes ta{0%,60%,100%{transform:translateY(0);opacity:.4}30%{transform:translateY(-6px);opacity:1}}
+.chips{padding:8px 14px;display:flex;gap:6px;flex-wrap:wrap;border-top:1px solid rgba(200,151,58,.1);}
+.chip{background:var(--green-pale);border:1px solid rgba(45,106,79,.2);color:var(--green);padding:5px 10px;border-radius:20px;font-size:11px;cursor:pointer;white-space:nowrap;}
+.chip:active{background:var(--green);color:white;}
+.ia{padding:10px 14px 12px;border-top:1px solid rgba(200,151,58,.15);display:flex;gap:8px;align-items:flex-end;}
+.inp{flex:1;border:1px solid rgba(200,151,58,.3);border-radius:20px;padding:9px 14px;font-size:13px;color:var(--text);background:var(--cream);outline:none;resize:none;font-family:inherit;}
+.inp:focus{border-color:var(--green);}
+.sbtn{width:38px;height:38px;background:linear-gradient(135deg,var(--green),#1b4332);border:none;border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0;font-size:16px;}
+.sbtn:active{transform:scale(.92);}
+
+/* Cards */
+.card{background:white;border-radius:16px;box-shadow:var(--shadow);border:1px solid rgba(200,151,58,.15);overflow:hidden;margin-bottom:12px;}
+.card-hd{padding:12px 16px;color:white;font-weight:600;font-size:14px;display:flex;align-items:center;gap:8px;}
+.card-hd.green{background:linear-gradient(135deg,var(--green),#1b4332);}
+.card-hd.gold{background:linear-gradient(135deg,var(--gold-dark),var(--gold));}
+.card-hd.red{background:linear-gradient(135deg,#922b21,var(--red));}
+.card-hd.blue{background:linear-gradient(135deg,#1a5276,var(--blue));}
+.form{padding:14px;display:flex;flex-direction:column;gap:10px;}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px;}
+.fg{display:flex;flex-direction:column;gap:4px;}
+.fl{font-size:11px;color:var(--muted);font-weight:500;}
+.fi{border:1px solid rgba(200,151,58,.25);border-radius:8px;padding:8px 10px;font-size:13px;color:var(--text);background:var(--cream);outline:none;font-family:inherit;}
+.fi:focus{border-color:var(--green);}
+select.fi{appearance:none;}
+.btn{color:white;border:none;border-radius:10px;padding:11px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit;width:100%;transition:all .2s;}
+.btn:active{transform:scale(.98);opacity:.9;}
+.btn.green{background:linear-gradient(135deg,var(--green),#1b4332);}
+.btn.gold{background:linear-gradient(135deg,var(--gold-dark),var(--gold));}
+.btn.red{background:linear-gradient(135deg,#922b21,var(--red));}
+.btn.blue{background:linear-gradient(135deg,#1a5276,var(--blue));}
+
+/* 记账专用 */
+.acc-summary{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:14px;}
+.acc-card{background:white;border-radius:12px;padding:12px 10px;text-align:center;box-shadow:0 2px 8px rgba(100,60,20,.06);}
+.acc-card.income .acc-n{color:var(--green);}
+.acc-card.expense .acc-n{color:var(--red);}
+.acc-card.profit .acc-n{color:var(--blue);}
+.acc-n{font-size:18px;font-weight:700;margin-bottom:2px;}
+.acc-l{font-size:10px;color:var(--muted);}
+
+.record-item{background:white;border-radius:12px;padding:12px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;box-shadow:0 2px 8px rgba(100,60,20,.06);border:1px solid rgba(200,151,58,.1);}
+.rec-icon{font-size:20px;width:36px;height:36px;background:var(--cream);border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.rec-info{flex:1;}
+.rec-title{font-size:13px;font-weight:600;margin-bottom:2px;}
+.rec-sub{font-size:11px;color:var(--muted);}
+.rec-amount{font-size:14px;font-weight:700;}
+.rec-amount.out{color:var(--red);}
+.rec-amount.in{color:var(--green);}
+
+.cat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px;}
+.cat-btn{background:white;border:2px solid rgba(200,151,58,.2);border-radius:10px;padding:10px 6px;text-align:center;cursor:pointer;transition:all .2s;}
+.cat-btn.active{border-color:var(--green);background:var(--green-pale);}
+.cat-btn:active{transform:scale(.96);}
+.cat-icon{font-size:20px;margin-bottom:4px;}
+.cat-label{font-size:11px;color:var(--text2);font-weight:500;}
+
+/* Nav */
+.bnav{position:fixed;bottom:0;left:0;right:0;background:white;border-top:1px solid rgba(200,151,58,.2);display:flex;padding:8px 0 16px;box-shadow:0 -4px 20px rgba(100,60,20,.1);}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
+.nico{font-size:20px;}
+.nlbl{font-size:10px;color:var(--muted);}
+.ni.active .nlbl{color:var(--green);font-weight:600;}
+
+.page{display:none;padding-bottom:80px;}
+.page.active{display:block;}
+</style>
+</head>
+<body>
+
+<!-- 首页 -->
+<div class="page active" id="p0">
+  <div class="hd">
+    <div class="hd-top">
+      <div class="logo">🌙</div>
+      <div><div class="bn">香麦源</div><div class="bs">清真烘焙工厂 · AI 管理助手</div></div>
+      <div class="hbadge">☪️ 清真认证</div>
+    </div>
+    <div class="hg">
+      <div class="gt">بِسْمِ اللَّهِ &nbsp;以真主之名，今日平安顺遂 🌿</div>
+      <div class="gd" id="gd"></div>
+    </div>
+  </div>
+  <div class="dtip">📱 演示版本 · 正式版上线后 AI 将实时智能响应</div>
+  <div class="sec">
+    <div class="stitle">快捷功能</div>
+    <div class="qg">
+      <button class="qb" onclick="go(2)"><div class="qi">📋</div><div class="ql">新建订单</div></button>
+      <button class="qb" onclick="go(1)"><div class="qi">🤖</div><div class="ql">AI助手</div></button>
+      <button class="qb" onclick="go(4)"><div class="qi">💰</div><div class="ql">随手记账</div></button>
+      <button class="qb" onclick="morning()"><div class="qi">☀️</div><div class="ql">早安推送</div></button>
+    </div>
+
+    <div class="stitle">今日概览</div>
+    <div class="stats">
+      <div class="stat"><div class="sn">7</div><div class="sl">进行中订单</div></div>
+      <div class="stat warn"><div class="sn">3</div><div class="sl">本周交期</div></div>
+      <div class="stat urgent"><div class="sn">2</div><div class="sl">库存预警</div></div>
+    </div>
+
+    <div class="stitle">今日财务</div>
+    <div class="acc-summary">
+      <div class="acc-card income"><div class="acc-n">¥<span id="h-in">0</span></div><div class="acc-l">今日收入</div></div>
+      <div class="acc-card expense"><div class="acc-n">¥<span id="h-out">0</span></div><div class="acc-l">今日支出</div></div>
+      <div class="acc-card profit"><div class="acc-n">¥<span id="h-profit">0</span></div><div class="acc-l">今日结余</div></div>
+    </div>
+
+    <div class="stitle">今日提醒</div>
+    <div class="ali urgent"><div class="aico">⚠️</div><div><div class="atitle">黄油库存不足</div><div class="adesc">当前库存 8kg，建议今天采购</div></div></div>
+    <div class="ali warn"><div class="aico">📅</div><div><div class="atitle">3单明天交货</div><div class="adesc">福润超市200个、家家乐100个、团购50个</div></div></div>
+    <div class="ali blue"><div class="aico">💰</div><div><div class="atitle">应收账款提醒</div><div class="adesc">家家乐 ¥3,200 已到账期，请跟进</div></div></div>
+    <div class="ali info"><div class="aico">💬</div><div><div class="atitle">新客户询价</div><div class="adesc">2位新客户询问定制价格，AI已自动回复</div></div></div>
+  </div>
+</div>
+
+<!-- AI助手 -->
+<div class="page" id="p1">
+  <div class="hd" style="padding-bottom:20px;">
+    <div class="hd-top">
+      <div class="logo">🤖</div>
+      <div><div class="bn" style="font-size:18px;">AI 工厂助手</div><div class="bs">随时问我，帮你省心经营</div></div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="chatbox">
+      <div class="chd">
+        <div class="aav">🌙</div>
+        <div><div class="anm">香麦源 AI 助手</div><div class="ast">专为工厂定制 · 演示模式</div></div>
+        <div class="dot"></div>
+      </div>
+      <div class="msgs" id="msgs">
+        <div class="msg msg-ai">
+          <div class="mav">🌙</div>
+          <div>
+            <div class="bbl">السَّلَامُ عَلَيْكُمْ 姐！我是香麦源AI助手 🌿<br><br>您可以问我：<br>· 订单管理和查询<br>· 库存情况分析<br>· 帮您写客户回复<br>· 财务收支查询<br>· 生产排班建议<br><br>点下面快捷问题体验 👇</div>
+            <div class="mt">随时在线</div>
+          </div>
+        </div>
+      </div>
+      <div class="chips">
+        <div class="chip" onclick="ask(this)">今天有几个订单？</div>
+        <div class="chip" onclick="ask(this)">本月收支情况</div>
+        <div class="chip" onclick="ask(this)">帮我写个客户回复</div>
+        <div class="chip" onclick="ask(this)">明天生产怎么安排</div>
+        <div class="chip" onclick="ask(this)">库存还够用吗？</div>
+      </div>
+      <div class="ia">
+        <textarea class="inp" id="inp" placeholder="输入您的问题..." rows="1"
+          onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();ask(null)}"></textarea>
+        <button class="sbtn" onclick="ask(null)">➤</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 订单 -->
+<div class="page" id="p2">
+  <div class="hd" style="padding-bottom:20px;">
+    <div class="hd-top">
+      <div class="logo">📋</div>
+      <div><div class="bn" style="font-size:18px;">新建订单</div><div class="bs">AI 自动生成确认单</div></div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="card">
+      <div class="card-hd gold">📝 快速录入订单</div>
+      <div class="form">
+        <div class="fg"><div class="fl">客户名称</div><input class="fi" id="oc" placeholder="如：福润超市、李总..."></div>
+        <div class="row2">
+          <div class="fg"><div class="fl">产品品类</div><input class="fi" id="op" placeholder="如：奶油蛋糕"></div>
+          <div class="fg"><div class="fl">数量</div><input class="fi" id="oq" placeholder="200" type="number"></div>
+        </div>
+        <div class="row2">
+          <div class="fg"><div class="fl">规格要求</div><input class="fi" id="os" placeholder="如：6寸、无糖"></div>
+          <div class="fg"><div class="fl">交货日期</div><input class="fi" id="od" type="date"></div>
+        </div>
+        <div class="row2">
+          <div class="fg"><div class="fl">单价(元)</div><input class="fi" id="oprice" placeholder="如：25" type="number"></div>
+          <div class="fg"><div class="fl">付款方式</div>
+            <select class="fi" id="opay">
+              <option>微信/支付宝</option>
+              <option>银行转账</option>
+              <option>现金</option>
+              <option>月结</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg"><div class="fl">备注</div><input class="fi" id="on" placeholder="特殊要求等"></div>
+        <button class="btn green" onclick="genOrder()">🤖 AI 生成订单确认单</button>
+      </div>
+    </div>
+    <div id="or" style="display:none;">
+      <div class="card">
+        <div class="card-hd green">✅ 订单确认单已生成</div>
+        <div style="padding:14px;">
+          <div id="orc" style="font-size:13px;line-height:1.9;color:var(--text);white-space:pre-line;"></div>
+          <button class="btn gold" style="margin-top:12px;" onclick="copy('orc')">📋 复制发给客户</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 库存 -->
+<div class="page" id="p3">
+  <div class="hd" style="padding-bottom:20px;">
+    <div class="hd-top">
+      <div class="logo">📦</div>
+      <div><div class="bn" style="font-size:18px;">原料库存</div><div class="bs">实时预警 · AI 采购建议</div></div>
+    </div>
+  </div>
+  <div class="sec">
+    <div class="stitle">库存状态</div>
+    <div id="sl"></div>
+    <div class="card">
+      <div class="card-hd green">➕ 更新库存</div>
+      <div class="form">
+        <div class="row2">
+          <div class="fg"><div class="fl">原料名称</div><input class="fi" id="sn" placeholder="如：面粉"></div>
+          <div class="fg"><div class="fl">数量</div><input class="fi" id="sa" placeholder="如：50kg"></div>
+        </div>
+        <button class="btn green" onclick="updStock()">更新库存</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 记账 -->
+<div class="page" id="p4">
+  <div class="hd" style="padding-bottom:20px;">
+    <div class="hd-top">
+      <div class="logo">💰</div>
+      <div><div class="bn" style="font-size:18px;">随手记账</div><div class="bs">说一句话，AI 自动记录</div></div>
+    </div>
+  </div>
+  <div class="sec">
+
+    <!-- 快速语音记账 -->
+    <div class="card">
+      <div class="card-hd blue">🎤 快速记账（直接说就行）</div>
+      <div class="form">
+        <div class="fg">
+          <div class="fl">直接输入，AI自动识别分类和金额</div>
+          <textarea class="fi" id="voice-input" rows="3"
+            placeholder="例如：&#10;买面粉80斤花了240元&#10;顺丰运费156块&#10;请王总吃饭488元刷卡&#10;员工小李报销出租车费35元"></textarea>
+        </div>
+        <button class="btn blue" onclick="quickRecord()">🤖 AI 识别并记录</button>
+      </div>
+    </div>
+
+    <!-- 手动记账 -->
+    <div class="card">
+      <div class="card-hd gold">✏️ 手动记账</div>
+      <div class="form">
+        <div class="stitle" style="margin-bottom:8px;">支出类型</div>
+        <div class="cat-grid">
+          <div class="cat-btn active" onclick="selCat(this,'原料采购','🌾')" data-cat="原料采购" data-ico="🌾"><div class="cat-icon">🌾</div><div class="cat-label">原料采购</div></div>
+          <div class="cat-btn" onclick="selCat(this,'员工工资','👷')" data-cat="员工工资" data-ico="👷"><div class="cat-icon">👷</div><div class="cat-label">员工工资</div></div>
+          <div class="cat-btn" onclick="selCat(this,'运输快递','🚚')" data-cat="运输快递" data-ico="🚚"><div class="cat-icon">🚚</div><div class="cat-label">运输快递</div></div>
+          <div class="cat-btn" onclick="selCat(this,'日常杂费','📎')" data-cat="日常杂费" data-ico="📎"><div class="cat-icon">📎</div><div class="cat-label">日常杂费</div></div>
+          <div class="cat-btn" onclick="selCat(this,'客户招待','🍽️')" data-cat="客户招待" data-ico="🍽️"><div class="cat-icon">🍽️</div><div class="cat-label">客户招待</div></div>
+          <div class="cat-btn" onclick="selCat(this,'客户收款','💚')" data-cat="客户收款" data-ico="💚"><div class="cat-icon">💚</div><div class="cat-label">客户收款</div></div>
+        </div>
+        <div class="row2">
+          <div class="fg"><div class="fl">金额(元)</div><input class="fi" id="ra" placeholder="如：240" type="number"></div>
+          <div class="fg"><div class="fl">付款方式</div>
+            <select class="fi" id="rpay">
+              <option>微信/支付宝</option><option>现金</option><option>银行卡</option><option>月结</option>
+            </select>
+          </div>
+        </div>
+        <div class="fg"><div class="fl">备注（可选）</div><input class="fi" id="rn" placeholder="如：买黄油20kg，顺溢食品供应"></div>
+        <button class="btn gold" onclick="addRecord()">✅ 记录</button>
+      </div>
+    </div>
+
+    <!-- 本月汇总 -->
+    <div class="card">
+      <div class="card-hd green">📊 本月收支汇总</div>
+      <div style="padding:14px;">
+        <div class="acc-summary" style="margin-bottom:12px;">
+          <div class="acc-card income"><div class="acc-n" style="font-size:16px;">¥<span id="m-in">0</span></div><div class="acc-l">本月收入</div></div>
+          <div class="acc-card expense"><div class="acc-n" style="font-size:16px;">¥<span id="m-out">0</span></div><div class="acc-l">本月支出</div></div>
+          <div class="acc-card profit"><div class="acc-n" style="font-size:16px;">¥<span id="m-profit">0</span></div><div class="acc-l">本月结余</div></div>
+        </div>
+        <div id="cat-breakdown" style="margin-bottom:12px;"></div>
+        <button class="btn green" onclick="exportRecords()">📤 导出本月账单</button>
+      </div>
+    </div>
+
+    <!-- 记录列表 -->
+    <div class="stitle">最近记录</div>
+    <div id="rec-list"></div>
+  </div>
+</div>
+
+<!-- 底部导航 -->
+<div class="bnav">
+  <div class="ni active" onclick="go(0)" id="n0"><div class="nico">🏠</div><div class="nlbl">首页</div></div>
+  <div class="ni" onclick="go(1)" id="n1"><div class="nico">🤖</div><div class="nlbl">AI助手</div></div>
+  <div class="ni" onclick="go(2)" id="n2"><div class="nico">📋</div><div class="nlbl">订单</div></div>
+  <div class="ni" onclick="go(3)" id="n3"><div class="nico">📦</div><div class="nlbl">库存</div></div>
+  <div class="ni" onclick="go(4)" id="n4"><div class="nico">💰</div><div class="nlbl">记账</div></div>
+</div>
+
+<script>
+// 页面切换
+function go(i){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('active'));
+  document.getElementById('p'+i).classList.add('active');
+  document.getElementById('n'+i).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+// 日期
+const now=new Date(), dw=['周日','周一','周二','周三','周四','周五','周六'];
+document.getElementById('gd').textContent=`${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${dw[now.getDay()]}`;
+
+// AI对话预设回答
+const QA={
+  '今天有几个订单？':'姐，今天共有 7 个进行中订单：\n\n📦 福润超市 - 奶油蛋糕200个，明天交货\n📦 家家乐 - 提拉米苏100个，明天交货\n📦 团购订单 - 6寸蛋糕50个，明天交货\n📦 清真寺活动 - 定制糕点300个，后天\n📦 学校食堂 - 面包150个，周五\n📦 李总 - 生日蛋糕8个，周五\n📦 王女士 - 婚礼蛋糕1个，周六\n\n⚠️ 明天3单要交货，今天重点安排生产！',
+  '本月收支情况':'姐，本月财务情况：\n\n💚 收入：¥68,500\n  · 福润超市 ¥28,000\n  · 家家乐 ¥15,500\n  · 其他客户 ¥25,000\n\n🔴 支出：¥41,200\n  · 原料采购 ¥22,000\n  · 员工工资 ¥15,000\n  · 运输快递 ¥2,800\n  · 日常杂费 ¥1,400\n\n💰 本月结余：¥27,300\n\n⚠️ 家家乐 ¥3,200 应收款未到，需跟进！',
+  '帮我写个客户回复':'好的姐，通用客户回复：\n\n"您好！感谢对香麦源的信任 🌙\n\n我们产品均采用清真认证原料，品质有保障。可提供：\n• 企业定制蛋糕（起订50个）\n• 节日礼品烘焙\n• 批量供货合作\n\n请告知数量和要求，我们尽快报价。\n\nبَارَكَ اللَّهُ فِيكَ 感谢惠顾！"\n\n需要根据具体情况修改吗？',
+  '明天生产怎么安排':'姐，明天生产建议：\n\n🌅 早班（6:00-14:00）\n• 优先完成福润超市200个奶油蛋糕\n• 同步备家家乐100个提拉米苏底胚\n\n🌇 下午班（14:00-22:00）\n• 完成提拉米苏100个\n• 完成团购50个6寸蛋糕\n• 备好后天清真寺原料\n\n⚠️ 黄油偏少，建议早上先采购再开工！',
+  '库存还够用吗？':'姐，库存情况：\n\n✅ 面粉：80kg - 充足\n✅ 牛奶：40L - 充足\n⚠️ 黄油：8kg - 偏少，建议采购20kg\n✅ 鸡蛋：200个 - 充足\n⚠️ 白糖：15kg - 偏少，建议采购30kg\n✅ 奶油：12kg - 充足\n\n建议今天联系供应商补货！'
+};
+
+const DR=['好的姐，我来帮您处理。能说得更具体一些吗？','明白了姐！我已记录，正式版上线后自动同步给相关人员。','姐，收到！目前工厂运转正常，有异常我会第一时间提醒您。','好的姐，让我帮您分析一下这个情况...'];
+let ri=0;
+
+function addMsg(txt,isU){
+  const m=document.getElementById('msgs');
+  const t=new Date(),tm=`${t.getHours()}:${String(t.getMinutes()).padStart(2,'0')}`;
+  const d=document.createElement('div');
+  d.className=`msg ${isU?'user':'msg-ai'}`;
+  d.innerHTML=`<div class="mav">${isU?'👩':'🌙'}</div><div><div class="bbl">${txt.replace(/\n/g,'<br>')}</div><div class="mt">${tm}</div></div>`;
+  m.appendChild(d);m.scrollTop=m.scrollHeight;
+}
+
+function addTyping(){
+  const m=document.getElementById('msgs');
+  const d=document.createElement('div');
+  d.className='msg msg-ai';d.id='ti';
+  d.innerHTML=`<div class="mav">🌙</div><div class="bbl" style="padding:10px 14px;"><div class="typing"><div class="td"></div><div class="td"></div><div class="td"></div></div></div>`;
+  m.appendChild(d);m.scrollTop=m.scrollHeight;
+}
+
+function ask(el){
+  const inp=document.getElementById('inp');
+  const txt=el?el.textContent:inp.value.trim();
+  if(!txt)return;
+  inp.value='';
+  go(1);
+  addMsg(txt,true);
+  addTyping();
+  const rep=QA[txt]||DR[ri++%DR.length];
+  setTimeout(()=>{document.getElementById('ti')?.remove();addMsg(rep,false);},1300);
+}
+
+function morning(){
+  go(1);
+  addMsg('帮我生成今天的早安推送',true);
+  addTyping();
+  const n=new Date();
+  const msg=`السَّلَامُ عَلَيْكُمْ ✨\n\n【香麦源早安提醒】\n\n今天是${n.getFullYear()}年${n.getMonth()+1}月${n.getDate()}日 ${dw[n.getDay()]}\n\n🌤️ 愿今天的工作如清晨的阳光，温暖充满力量！\n\n💡 烘焙小知识：黄油打发时保持室温软化，才能打入足够空气，让蛋糕更蓬松。\n\n🍰 今日重点：3单明天交货，大家加油！\n\nبَارَكَ اللَّهُ فِيكُمْ\n香麦源工厂 敬上`;
+  setTimeout(()=>{document.getElementById('ti')?.remove();addMsg(msg,false);},1500);
+}
+
+// 订单生成
+function genOrder(){
+  const c=document.getElementById('oc').value||'客户';
+  const p=document.getElementById('op').value||'蛋糕';
+  const q=document.getElementById('oq').value||'100';
+  const s=document.getElementById('os').value||'标准';
+  const d=document.getElementById('od').value;
+  const price=document.getElementById('oprice').value;
+  const pay=document.getElementById('opay').value;
+  const n=document.getElementById('on').value;
+  const ds=d?new Date(d).toLocaleDateString('zh-CN'):'待确认';
+  const no='XMY'+Date.now().toString().slice(-6);
+  const total=price&&q?`¥${(parseFloat(price)*parseFloat(q)).toFixed(0)}`:'待定';
+  const r=`━━━━━━━━━━━━━━━━━━
+香麦源清真烘焙工厂
+订单确认单 ☪️
+━━━━━━━━━━━━━━━━━━
+订单编号：${no}
+开单日期：${new Date().toLocaleDateString('zh-CN')}
+
+【客户信息】
+客户名称：${c}
+
+【订单详情】
+产品品类：${p}
+数量：${q} 个
+规格要求：${s}
+${price?'单价：¥'+price+'/个\n':''}订单金额：${total}
+交货日期：${ds}
+付款方式：${pay}
+${n?'备注：'+n:''}
+
+【质量承诺】
+本产品采用清真认证原料
+符合清真食品标准 ☪️
+
+请回复"确认"即视为订单确认。
+
+━━━━━━━━━━━━━━━━━━
+香麦源清真烘焙工厂
+━━━━━━━━━━━━━━━━━━`;
+  document.getElementById('orc').textContent=r;
+  document.getElementById('or').style.display='block';
+  document.getElementById('or').scrollIntoView({behavior:'smooth'});
+}
+
+// 库存
+let stocks=[
+  {name:'面粉',amount:'80kg',status:'ok'},{name:'牛奶',amount:'40L',status:'ok'},
+  {name:'黄油',amount:'8kg',status:'warn'},{name:'鸡蛋',amount:'200个',status:'ok'},
+  {name:'白糖',amount:'15kg',status:'warn'},{name:'奶油',amount:'12kg',status:'ok'}
+];
+
+function renderS(){
+  document.getElementById('sl').innerHTML=stocks.map(s=>`
+    <div class="ali ${s.status==='warn'?'urgent':'info'}" style="margin-bottom:8px;">
+      <div class="aico">${s.status==='warn'?'⚠️':'✅'}</div>
+      <div style="flex:1;"><div class="atitle">${s.name}</div>
+      <div class="adesc">库存：${s.amount}${s.status==='warn'?' · 建议补货':''}</div></div>
+    </div>`).join('');
+}
+renderS();
+
+function updStock(){
+  const n=document.getElementById('sn').value.trim();
+  const a=document.getElementById('sa').value.trim();
+  if(!n||!a){alert('请填写名称和数量');return;}
+  const i=stocks.findIndex(s=>s.name===n);
+  if(i>=0){stocks[i].amount=a;stocks[i].status='ok';}
+  else stocks.push({name:n,amount:a,status:'ok'});
+  renderS();
+  document.getElementById('sn').value='';
+  document.getElementById('sa').value='';
+  alert(`✅ ${n} 库存已更新！`);
+}
+
+// 记账系统
+let records=[];
+let selCatName='原料采购', selCatIco='🌾';
+
+function selCat(el,cat,ico){
+  document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  selCatName=cat; selCatIco=ico;
+}
+
+// AI快速识别记账
+function quickRecord(){
+  const txt=document.getElementById('voice-input').value.trim();
+  if(!txt){alert('请输入记账内容');return;}
+
+  // 简单的关键词识别
+  let cat='日常杂费', ico='📎', isIncome=false;
+  if(/面粉|黄油|牛奶|鸡蛋|糖|奶油|原料|食材|采购|进货/.test(txt)){cat='原料采购';ico='🌾';}
+  else if(/工资|薪资|发薪|员工|工人/.test(txt)){cat='员工工资';ico='👷';}
+  else if(/顺丰|快递|运费|物流|运输|发货/.test(txt)){cat='运输快递';ico='🚚';}
+  else if(/吃饭|请客|招待|餐|宴/.test(txt)){cat='客户招待';ico='🍽️';}
+  else if(/收款|到账|付款|客户打款|回款/.test(txt)){cat='客户收款';ico='💚';isIncome=true;}
+
+  // 提取金额
+  const match=txt.match(/(\d+(\.\d+)?)/);
+  const amount=match?parseFloat(match[1]):0;
+
+  if(!amount){alert('没有识别到金额，请重新输入');return;}
+
+  const record={
+    id:Date.now(),
+    cat,ico,
+    desc:txt,
+    amount,
+    isIncome,
+    pay:'微信/支付宝',
+    time:new Date()
+  };
+
+  records.unshift(record);
+  document.getElementById('voice-input').value='';
+  updateStats();
+  renderRecords();
+
+  // 显示识别结果
+  const typeStr=isIncome?'收入':'支出';
+  alert(`✅ AI已识别并记录！\n\n类型：${ico} ${cat}（${typeStr}）\n金额：¥${amount}\n\n如有误差可在下方手动记账修正。`);
+}
+
+function addRecord(){
+  const a=parseFloat(document.getElementById('ra').value);
+  if(!a||a<=0){alert('请输入正确金额');return;}
+  const pay=document.getElementById('rpay').value;
+  const note=document.getElementById('rn').value;
+  const isIncome=selCatName==='客户收款';
+
+  records.unshift({
+    id:Date.now(),
+    cat:selCatName,ico:selCatIco,
+    desc:note||(isIncome?'客户收款':selCatName),
+    amount:a,isIncome,pay,
+    time:new Date()
+  });
+
+  document.getElementById('ra').value='';
+  document.getElementById('rn').value='';
+  updateStats();
+  renderRecords();
+  alert('✅ 记录成功！');
+}
+
+function updateStats(){
+  const today=new Date().toDateString();
+  let din=0,dout=0,min=0,mout=0;
+  const cm=new Date().getMonth();
+
+  records.forEach(r=>{
+    if(r.time.toDateString()===today){
+      r.isIncome?din+=r.amount:dout+=r.amount;
+    }
+    if(r.time.getMonth()===cm){
+      r.isIncome?min+=r.amount:mout+=r.amount;
+    }
+  });
+
+  document.getElementById('h-in').textContent=din.toFixed(0);
+  document.getElementById('h-out').textContent=dout.toFixed(0);
+  document.getElementById('h-profit').textContent=(din-dout).toFixed(0);
+  document.getElementById('m-in').textContent=min.toFixed(0);
+  document.getElementById('m-out').textContent=mout.toFixed(0);
+  document.getElementById('m-profit').textContent=(min-mout).toFixed(0);
+
+  // 分类统计
+  const cats={};
+  records.forEach(r=>{
+    if(!r.isIncome&&r.time.getMonth()===cm){
+      cats[r.cat]=(cats[r.cat]||0)+r.amount;
+    }
+  });
+  const html=Object.entries(cats).map(([k,v])=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(200,151,58,.1);font-size:12px;">
+      <span style="color:var(--text2);">${k}</span>
+      <span style="color:var(--red);font-weight:600;">-¥${v.toFixed(0)}</span>
+    </div>`).join('');
+  document.getElementById('cat-breakdown').innerHTML=html||'<div style="font-size:12px;color:var(--muted);text-align:center;padding:8px;">本月暂无支出记录</div>';
+}
+
+function renderRecords(){
+  const list=document.getElementById('rec-list');
+  if(!records.length){list.innerHTML='<div style="text-align:center;color:var(--muted);font-size:13px;padding:20px;">暂无记录，点击上方记账按钮开始记录</div>';return;}
+  list.innerHTML=records.slice(0,20).map(r=>{
+    const t=r.time;
+    const ts=`${t.getMonth()+1}/${t.getDate()} ${t.getHours()}:${String(t.getMinutes()).padStart(2,'0')}`;
+    return `<div class="record-item">
+      <div class="rec-icon">${r.ico}</div>
+      <div class="rec-info">
+        <div class="rec-title">${r.cat}</div>
+        <div class="rec-sub">${r.desc||''} · ${r.pay} · ${ts}</div>
+      </div>
+      <div class="rec-amount ${r.isIncome?'in':'out'}">${r.isIncome?'+':'-'}¥${r.amount.toFixed(0)}</div>
+    </div>`;
+  }).join('');
+}
+
+function exportRecords(){
+  if(!records.length){alert('暂无记录');return;}
+  let csv='时间,类型,描述,金额,收支,付款方式\n';
+  records.forEach(r=>{
+    const t=r.time;
+    csv+=`${t.getFullYear()}/${t.getMonth()+1}/${t.getDate()} ${t.getHours()}:${t.getMinutes()},${r.cat},${r.desc},${r.amount},${r.isIncome?'收入':'支出'},${r.pay}\n`;
+  });
+  const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`香麦源账单_${new Date().getMonth()+1}月.csv`;
+  a.click();
+  alert('✅ 账单已导出！可用Excel打开，也可录入管家婆。');
+}
+
+function copy(id){
+  const txt=document.getElementById(id).textContent;
+  if(navigator.clipboard){navigator.clipboard.writeText(txt).then(()=>alert('✅ 已复制！可直接发给客户'));}
+  else{const ta=document.createElement('textarea');ta.value=txt;document.body.appendChild(ta);ta.select();document.execCommand('copy');document.body.removeChild(ta);alert('✅ 已复制！');}
+}
+
+renderRecords();
+updateStats();
+</script>
+</body>
+</html>
